@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Recruitment Agency Time Leak Scorecard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-primary: #3D52A0;
+      --color-accent:  #7091E6;
+      --color-bg:      #F5F5F5;
+      --color-text:    #1A1A2E;
+      --color-cta:     #EF767A;
+      --color-white:   #ffffff;
+      --color-border:  #E2E4EF;
+      --radius:        12px;
+      --shadow:        0 4px 24px rgba(29,37,80,0.10);
+      --shadow-card:   0 2px 8px rgba(29,37,80,0.07);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .card {
+      background: var(--color-white);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 560px;
+      overflow: hidden;
+    }
+
+    /* ── HEADER BAR ── */
+    .card-header {
+      background: var(--color-primary);
+      padding: 24px 32px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .wordmark {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-white);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    .badge-steps {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-primary);
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      height: 4px;
+      background: var(--color-border);
+    }
+    .progress-fill {
+      height: 4px;
+      background: var(--color-accent);
+      transition: width 0.4s cubic-bezier(.4,0,.2,1);
+      width: 0%;
+    }
+
+    /* ── CARD BODY ── */
+    .card-body {
+      padding: 36px 32px 32px;
+    }
+
+    /* ── INTRO SCREEN ── */
+    .intro-icon {
+      width: 52px;
+      height: 52px;
+      background: #EEF1FB;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .intro-icon svg { width: 26px; height: 26px; }
+
+    .intro-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--color-text);
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+    .intro-sub {
+      font-size: 14px;
+      color: #5A5E7A;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .meta-pill {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 100px;
+      background: #EEF1FB;
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── QUESTION SCREEN ── */
+    .q-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 8px;
+    }
+    .q-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.35;
+      margin-bottom: 24px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .option:hover {
+      border-color: var(--color-accent);
+      background: #F4F6FD;
+      box-shadow: var(--shadow-card);
+    }
+    .option.selected {
+      border-color: var(--color-primary);
+      background: #EEF1FB;
+    }
+
+    .option-radio {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--color-border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.18s;
+    }
+    .option.selected .option-radio {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+    }
+    .option-radio-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .option.selected .option-radio-dot { opacity: 1; }
+
+    .option-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text);
+      line-height: 1.4;
+    }
+    
+
+    /* ── RESULTS SCREEN ── */
+    .result-score-block {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .result-score-num {
+      font-size: 64px;
+      font-weight: 800;
+      color: var(--color-cta);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .result-score-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #9B9FC0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .result-bracket {
+      border-left: 3px solid var(--color-cta);
+      padding: 14px 16px;
+      background: #FFF5F5;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-bottom: 24px;
+    }
+    .result-bracket-score {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-cta);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .result-bracket-text {
+      font-size: 14px;
+      color: var(--color-text);
+      line-height: 1.55;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--color-border);
+      margin: 24px 0;
+    }
+
+    .converter-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 16px;
+    }
+    .converter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .converter-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #7A7E9A;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 6px;
+    }
+    .converter-field input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--color-border);
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      color: var(--color-text);
+      background: var(--color-bg);
+      transition: border-color 0.15s;
+      outline: none;
+    }
+    .converter-field input:focus {
+      border-color: var(--color-accent);
+    }
+
+    .converter-result {
+      background: var(--color-bg);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .converter-result-label {
+      font-size: 13px;
+      color: #7A7E9A;
+      font-weight: 500;
+    }
+    .converter-result-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--color-cta);
+    }
+
+    .cta-box {
+      background: var(--color-primary);
+      border-radius: var(--radius);
+      padding: 20px 20px;
+      margin-bottom: 4px;
+    }
+    .cta-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s;
+      outline: none;
+      letter-spacing: 0.01em;
+    }
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(61,82,160,0.25);
+    }
+    .btn-primary:hover { opacity: 0.92; }
+    .btn-primary:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-cta {
+      background: var(--color-cta);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(239,118,122,0.35);
+    }
+    .btn-cta:hover { opacity: 0.92; }
+
+    .btn-ghost {
+      background: transparent;
+      color: #9B9FC0;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px;
+      width: auto;
+      margin: 8px auto 0;
+      display: block;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0;
+    }
+    .btn-ghost:hover { color: var(--color-text); }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #B0B4C8;
+      text-align: center;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── TRANSITIONS ── */
+    .screen.fade-in {
+      animation: fadeUp 0.28s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .card-body { padding: 28px 20px 24px; }
+      .card-header { padding: 20px; }
+      .q-text { font-size: 16px; }
+      .converter-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="card">
+
+    <!-- HEADER BAR -->
+    <div class="card-header">
+      <span class="wordmark">Maxime Ivanov</span>
+      <span class="badge-steps" id="stepBadge">Scorecard</span>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <!-- CARD BODY -->
+    <div class="card-body">
+
+      <!-- ── INTRO ── -->
+      <div class="screen active fade-in" id="screen-intro">
+        <div class="intro-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3D52A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h1 class="intro-title">The Recruitment Agency<br/>Time Leak Scorecard</h1>
+        <p class="intro-sub">Find out exactly how many hours per week your agency is losing to manual work, and what it's costing you in euros.</p>
+        <div class="meta-row">
+          <span class="meta-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Under 4 minutes
+          </span>
+          <span class="meta-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            6 questions
+          </span>
+          <span class="meta-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Euro cost calculator
+          </span>
+        </div>
+        <button class="btn btn-primary" onclick="startQuiz()">
+          Start the scorecard
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+
+      <!-- ── QUESTIONS (generated by JS) ── -->
+      <div class="screen" id="screen-questions">
+        <p class="q-label" id="qLabel">Question 1 of 6</p>
+        <h2 class="q-text" id="qText"></h2>
+        <div class="options" id="optionsContainer"></div>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>
+          Continue
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+
+      <!-- ── RESULTS ── -->
+      <div class="screen" id="screen-results">
+        <div class="result-score-block">
+          <div class="result-score-num" id="resultScore">—</div>
+          <div class="result-score-label">Your Score / 24</div>
+        </div>
+
+        <div class="result-bracket" id="resultBracket">
+          <div class="result-bracket-score" id="resultBracketScore"></div>
+          <div class="result-bracket-text" id="resultBracketText"></div>
+        </div>
+
+        <p id="ctaTagline" style="text-align:center; font-size:15px; font-weight:700; color:#1A1A2E; margin: 20px 0;">That's not a workflow problem. That's a revenue problem.</p>
+
+        <div class="divider"></div>
+
+        <div class="converter-title">The Cost of Your Time Leak</div>
+        <div class="converter-row">
+          <div class="converter-field">
+            <label>Hours lost / week</label>
+            <input type="number" id="hoursInput" placeholder="e.g. 30" min="0" oninput="calcCost()" />
+          </div>
+          <div class="converter-field">
+            <label>Avg billing rate (€/hr)</label>
+            <input type="number" id="rateInput" placeholder="e.g. 60" min="0" oninput="calcCost()" />
+          </div>
+        </div>
+        <div class="converter-result">
+          <span class="converter-result-label">Monthly cost estimate</span>
+          <span class="converter-result-value" id="costResult">€ —</span>
+        </div>
+        <div class="cta-box" id="ctaBox">
+          <p class="cta-text">If your score is above 14, I can show you exactly which workflows are causing most of the time loss, and what the fix could look like for your agency.<br/><br/>Takes 20 minutes. No pitch. Just a focused look.</p>
+          <button class="btn btn-cta" id="ctaBtn">Show me where my agency is leaking time →</button>
+        </div>
+
+        <button class="btn btn-ghost" onclick="startQuiz()">↺ Retake the scorecard</button>
+      </div>
+
+    </div>
+  </div>
+  <div class="footer"> </div>
+</div>
+
+<script>
+  const questions = [
+    {
+      label: "CV Screening",
+      text: "How long does your team spend reviewing and screening CVs per open role?",
+      options: [
+        { text: "Under 2 hours per role", score: 1 },
+        { text: "2–5 hours per role",     score: 2 },
+        { text: "5–10 hours per role",    score: 3 },
+        { text: "10+ hours per role",     score: 4 },
+      ]
+    },
+    {
+      label: "Candidate Summaries",
+      text: "How long does it take to write a candidate summary to send to a client?",
+      options: [
+        { text: "Under 10 minutes", score: 1 },
+        { text: "10–20 minutes",    score: 2 },
+        { text: "20–40 minutes",    score: 3 },
+        { text: "40+ minutes",      score: 4 },
+      ]
+    },
+    {
+      label: "Interview Scheduling",
+      text: "How many back-and-forth messages does it take to schedule a candidate interview?",
+      options: [
+        { text: "1–2 messages",  score: 1 },
+        { text: "3–5 messages",  score: 2 },
+        { text: "5–10 messages", score: 3 },
+        { text: "10+ messages",  score: 4 },
+      ]
+    },
+    {
+      label: "Follow-Up Management",
+      text: "How often do candidates go cold because your team forgot to follow up?",
+      options: [
+        { text: "Rarely — we have a system",               score: 1 },
+        { text: "Sometimes — maybe 1–2 per week",          score: 2 },
+        { text: "Often — it's a real problem",             score: 3 },
+        { text: "Constantly — we lose placements because of it", score: 4 },
+      ]
+    },
+    {
+      label: "CRM / ATS Updates",
+      text: "After a call or interview, how long does it take a recruiter to update your ATS or CRM?",
+      options: [
+        { text: "Under 5 minutes",                  score: 1 },
+        { text: "5–15 minutes",                     score: 2 },
+        { text: "15–30 minutes",                    score: 3 },
+        { text: "We often don't update it properly", score: 4 },
+      ]
+    },
+    {
+      label: "Job Description Writing",
+      text: "How long does it take to write a job description from a client brief?",
+      options: [
+        { text: "Under 15 minutes", score: 1 },
+        { text: "15–30 minutes",    score: 2 },
+        { text: "30–60 minutes",    score: 3 },
+        { text: "Over an hour",     score: 4 },
+      ]
+    },
+  ];
+
+  const brackets = [
+  { min: 6,  max: 10, label: "6 – 10",  text: "Your agency has most workflows reasonably under control. But even at this level, there are 5–10 hours per week sitting in tasks that should be automated." },
+  { min: 11, max: 16, label: "11 – 16", text: "You have a real leak. Your team is losing 15–25 hours per week to manual work — that's the equivalent of one recruiter spending half their week on tasks that should be automated." },
+  { min: 17, max: 21, label: "17 – 21", text: "This is affecting your placements. Your agency is bleeding 25–35 hours per week — roughly one full-time recruiter doing nothing but admin. The candidates your competitors placed while your team was doing manual follow-ups? That's the real cost." },
+  { min: 22, max: 24, label: "22 – 24", text: "This is a business problem, not a workflow problem. Your manual workload is actively preventing you from scaling. Every recruiter you add makes this worse — they bring more admin, not more revenue. You're not losing hours. You're losing the ability to grow." },
+];
+
+  let currentQ = 0;
+  let answers = [];
+  let selectedIdx = null;
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active', 'fade-in'));
+    const el = document.getElementById(id);
+    el.classList.add('active');
+    requestAnimationFrame(() => el.classList.add('fade-in'));
+  }
+
+  function updateProgress() {
+    const pct = currentQ === 0 ? 0 : Math.round((currentQ / questions.length) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('stepBadge').textContent =
+      currentQ === 0 ? 'Scorecard' : `${currentQ} / ${questions.length}`;
+  }
+
+  function startQuiz() {
+    currentQ = 0;
+    answers = [];
+    renderQuestion();
+    showScreen('screen-questions');
+    updateProgress();
+  }
+
+  function renderQuestion() {
+    selectedIdx = null;
+    const q = questions[currentQ];
+    document.getElementById('qLabel').textContent = `${q.label} · Question ${currentQ + 1} of ${questions.length}`;
+    document.getElementById('qText').textContent = q.text;
+    document.getElementById('nextBtn').disabled = true;
+
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+
+    q.options.forEach((opt, i) => {
+      const div = document.createElement('div');
+      div.className = 'option';
+      div.innerHTML = `
+        <div class="option-radio"><div class="option-radio-dot"></div></div>
+        <span class="option-text">${opt.text}</span>
+      `;
+      div.addEventListener('click', () => selectOption(i));
+      container.appendChild(div);
+    });
+  }
+
+  function selectOption(idx) {
+    selectedIdx = idx;
+    document.querySelectorAll('.option').forEach((el, i) => {
+      el.classList.toggle('selected', i === idx);
+    });
+    document.getElementById('nextBtn').disabled = false;
+  }
+
+  function nextQuestion() {
+    if (selectedIdx === null) return;
+    answers[currentQ] = questions[currentQ].options[selectedIdx].score;
+    currentQ++;
+    updateProgress();
+
+    if (currentQ < questions.length) {
+      renderQuestion();
+      const qs = document.getElementById('screen-questions');
+      qs.classList.remove('fade-in');
+      requestAnimationFrame(() => qs.classList.add('fade-in'));
+    } else {
+      showResults();
+    }
+  }
+
+  function showResults() {
+    const total = answers.reduce((a, b) => a + b, 0);
+    document.getElementById('resultScore').textContent = total;
+
+    const bracket = brackets.find(b => total >= b.min && total <= b.max) || brackets[brackets.length - 1];
+    document.getElementById('resultBracketScore').textContent = 'Score ' + bracket.label;
+    document.getElementById('resultBracketText').textContent = bracket.text;
+
+    // Always show CTA section
+    document.getElementById('ctaBox').style.display = 'block';
+    document.getElementById('ctaTagline').style.display = 'block';
+
+    // Prefill hours from score
+    const suggestedHours = total <= 10 ? 8 : total <= 16 ? 20 : total <= 21 ? 30 : 35;
+    document.getElementById('hoursInput').value = suggestedHours;
+    document.getElementById('rateInput').value = '';
+    document.getElementById('costResult').textContent = '€ —';
+
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('stepBadge').textContent = 'Your Results';
+
+    showScreen('screen-results');
+  }
+
+  function calcCost() {
+    const h = parseFloat(document.getElementById('hoursInput').value) || 0;
+    const r = parseFloat(document.getElementById('rateInput').value) || 0;
+    const monthly = h * r * 4;
+    document.getElementById('costResult').textContent =
+      monthly > 0
+        ? '€ ' + monthly.toLocaleString('en-EU', { maximumFractionDigits: 0 })
+        : '€ —';
+  }
+</script>
+</body>
+</html>
